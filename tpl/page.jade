@@ -1,0 +1,47 @@
+doctype html
+html
+    head
+        title= "MathChat"
+        link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css')
+        link(rel='stylesheet' href='/css/style.css')
+        script(src='/socket.io/socket.io.js')
+        script(src='//code.jquery.com/jquery-1.11.2.min.js')
+        script(src='//code.jquery.com/jquery-migrate-1.2.1.min.js')
+        script(type='text/x-mathjax-config') MathJax.Hub.Config({ extensions: ["tex2jax.js"], jax: ["input/TeX", "output/HTML-CSS"], tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ], displayMath: [ ['$$','$$'], ["\\[","\\]"] ], processEscapes: true}, "HTML-CSS": { availableFonts: ["TeX"] }});
+        script(src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML')
+        script(src='/chat.js')
+    body
+        .container
+            .page-header
+                h1
+                    a#homelink(href='/') M$\alpha$thChat
+            #welcome.jumbotron
+                h1 Welcome to M$\alpha$thChat.
+                p Please enter your name to continue:
+                #loginform.input-group
+                    input#name.form-control(type='text', name='name')
+                    span.input-group-btn
+                        input#enter.btn.btn-default(type='button', name='enter' value='Enter')
+            #chatroom
+                .row
+                    .col-md-6
+                        #greeting
+                            p You are currently logged in as 
+                            button#logout.btn.btn-default(type='button') Logout
+                        #chatbox
+                        #typing
+                            span
+                                p  is typing...
+                    //- .col-md-6
+                    //-     h3 Currently Online
+                    //-     #online
+                .row
+                    .col-md-6
+                        .controls.input-group(style='margin-top: 10px')
+                            textarea#field.form-control(style='height: 60px')
+                            span.input-group-btn
+                                button#send.btn.btn-default(type='button', style='height:60px; width:60px') Send
+                
+                    //- .col-md-6
+                    //-     h3 Preview
+                    //-     #preview

@@ -1,0 +1,81 @@
+.container {
+	margin-bottom: 20px;
+}
+
+#homelink {
+	color: #333;
+	text-decoration: none;
+}
+
+#greeting {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+	margin-bottom: 4px;
+}
+
+#greeting p {
+	display: table-cell;
+	/*width: 400px;*/
+	vertical-align: middle;
+}
+
+#logout {
+	display: table-cell;
+	float: right;
+}
+
+#chatbox {
+	height: 300px;
+	margin: 0 0 20px 0;
+	border-top: solid 1px #999;
+	overflow-y: scroll;
+}
+
+.msgcontainer {
+	margin: auto;
+	display: table;
+	width: 100%;
+}
+
+.userbox {
+	width: 60px;
+	/*background-color: red;*/
+	display: table-cell;
+}
+
+.msgbox {
+	display: table-cell;
+	table-layout: fixed;
+	min-height: 76px;
+	padding: 10px;
+}
+
+.serverbox {
+	min-height: 40px;
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+}
+
+.serverln {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.msgln {
+	display: table-row;
+	vertical-align: middle;
+	height: 30px;
+	text-align: left;
+}
+
+
+#typing {
+	border-bottom: solid 1px #999;
+}
+
+.invisible {
+	visibility: hidden;
+}
