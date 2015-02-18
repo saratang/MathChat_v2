@@ -5,8 +5,9 @@ var bodyParser = require("body-parser");
 // var cookieParser = require("cookie-parser")();
 // var session = require("cookie-session")({secret: 'secret'});
 var app = express();
-var port = 3700;
- 
+// var port = process.env.PORT || 5000;
+
+app.set('port', (process.env.PORT || 3700));
 app.set('views', __dirname + '/tpl');
 app.set('view engine', "jade");
 app.engine('jade', require('jade').__express);
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
 var sess;
+var port = app.get('port');
 
 app.get("/", function(req, res){
     sess=req.session;

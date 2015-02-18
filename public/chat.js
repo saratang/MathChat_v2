@@ -2,7 +2,7 @@ window.onload = function() {
 
     var messages = [];
     var current_index;
-    var socket = io.connect('http://192.168.0.101:3700');
+    var socket = io.connect(window.location.origin || window.location.protocol + '//' + window.location.hostname + ':' + window.location.port);
     var field = document.getElementById("field");
     var sendButton = document.getElementById("send");
     var content = document.getElementById("chatbox");
