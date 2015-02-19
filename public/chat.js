@@ -219,6 +219,7 @@ window.onload = function() {
     $('.math-btn').click(function() {
         //alert('clicked on ' + $(this).attr("value") +'!');
         field.value += $(this).attr("value");
+        field.focus();
     });
 }
 
