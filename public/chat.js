@@ -44,25 +44,17 @@ window.onload = function() {
     function login(sess) {
         if (typeof sess != 'undefined' && typeof sess.name != 'undefined') {
             // alert('sess and sess.name are defined');
-            $('#welcome').hide();
-            $('#chatroom').show();
+            //$('#welcome').hide();
+            //$('#chatroom').show();
             $('#greeting p').append('<b>' + sess.name + '</b>.');
             //$('#online').append('<div>' + sess.name + '</div>');
             socket.emit('enter');
-        } else {
-            // if (typeof sess == 'undefined') {
-            //     alert('sess is undefined');
-            // } else if (typeof sess.name == 'undefined') {
-            //     alert('sess.name is undefined');
-            // }
-            $('#chatroom').hide();
-            $('#welcome').show();
         }
     }
 
     function get_user_sess (data) {
         sess = data.user_sess;
-        console.log(sess);
+        // console.log(sess);
         login(sess);
         socket.removeListener('send_user_sess', get_user_sess);
     }
@@ -70,7 +62,7 @@ window.onload = function() {
     socket.on('send_user_sess', get_user_sess);
     socket.on('send_global_sess', function (data) {
         global_sess = data.global_sess;
-        console.log(global_sess);
+        // console.log(global_sess);
     });
     socket.emit('new_user');
 
@@ -93,7 +85,7 @@ window.onload = function() {
             current_index = i;
 
             if (i != 0 && messages[i-1].user_id == messages[i].user_id) {
-                console.log(i);
+                // console.log(i);
                 html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div>';
 
                 var j = i - 1;
@@ -130,7 +122,7 @@ window.onload = function() {
     $("#typing span").addClass("invisible");
     
     socket.on('typing_message', function(data) {
-        $("#typing span").html(data.user + " is typing...")
+        $("#typing span").html("<p>" + data.user + " is typing...</p>")
         .removeClass("invisible");
     });
 
@@ -138,6 +130,12 @@ window.onload = function() {
         $("#typing span").html("")
         .addClass("invisible");
     })
+
+    // if (is_typing(field)) {
+    //     socket.emit('typing', {user: sess.name});
+    // } else {
+    //     socket.emit('not_typing');
+    // }
 
     $("#field").focusin(function() {
         if (this.value != '') {
@@ -156,13 +154,14 @@ window.onload = function() {
             socket.emit('typing', {user: sess.name});
         }
         //Pushing Enter or Shft + Enter
-        if (e.keyCode == 13 && e.shiftKey) {
-            var content = $(this).val();
-            var caret = getCaret(this);
-            $(this).val() = content.substring(0, caret) + "\n" + content.substring(caret, content.length);
-            e.stopPropagation();
-        }
-        else if (e.keyCode == 13 && !e.shiftKey) {
+        // if (e.keyCode == 13 && e.shiftKey) {
+        //     var content = field.value;
+        //     var caret = getCaret(this);
+        //     field.value = content.substring(0, caret) + "\n" + content.substring(caret, content.length);
+        //     e.stopPropagation();
+        // } else 
+
+        if (e.keyCode == 13 && !e.shiftKey) {
             if (field.value != '') {
                 sendMessage();
             }
@@ -177,7 +176,7 @@ window.onload = function() {
             if (current_index > 0) {
                 do {
                     current_index--;
-                    console.log(current_index);
+                    // console.log(current_index);
                 } while (messages[current_index].user_id != sess.user_id && current_index > 0);
             }
         }
@@ -187,7 +186,7 @@ window.onload = function() {
             if (current_index < messages.length - 1) {
                 do {
                     current_index++;
-                    console.log(current_index);
+                    // console.log(current_index);
                 } while (messages[current_index].user_id != sess.user_id && current_index < messages.length - 1);
             }
             
@@ -206,13 +205,35 @@ window.onload = function() {
     });
 
     function sendMessage() {
-        var text = autocomplete(field.value.trim(), '$$');
-            text = autocomplete(field.value.trim(), '$');
+        // console.log('Before: ' + field.value);
+        // console.log('Trimmed: ' + field.value.trim());
+        var text = format(field.value.trim());
+        // console.log('After: ' + text);
         socket.emit('send', { message: text, username: sess.name, id: makeid(), user_id: sess.user_id});
         field.value = "";
         socket.emit('not_typing');
         //$("#typing span").addClass("invisible");
     };
+
+    //if click on math button
+    $('.math-btn').click(function() {
+        //alert('clicked on ' + $(this).attr("value") +'!');
+        field.value += $(this).attr("value");
+    });
+}
+
+function is_typing(field) {
+    $(this).focusin(function() {
+        if (this.value != '') {
+            return true;
+        }
+    }).focusout(function() {
+        return false;
+    }).keyup(function(e) {
+        if (this.value != '') {
+            return true;
+        }
+    })
 }
 
 function validate_name(username) {
@@ -225,6 +246,21 @@ function validate_name(username) {
             }
         });
     }
+}
+
+function format(message) {
+    var text = autocomplete(message, "$$");
+    text = autocomplete(text, "$");
+    text = escape_tags(text);
+    return new_line(text);
+}
+
+function escape_tags(message) {
+    return message.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') ;
+}
+
+function new_line(message) {
+    return message.replace(/\n/,'<br />');
 }
 
 function autocomplete(message, identifier) {

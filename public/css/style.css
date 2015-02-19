@@ -68,14 +68,28 @@
 	display: table-row;
 	vertical-align: middle;
 	height: 30px;
+	margin: 20px;
 	text-align: left;
 }
 
 
 #typing {
 	border-bottom: solid 1px #999;
+	vertical-align: middle;
 }
 
-.invisible {
-	visibility: hidden;
+.row {
+	height: 120px;
+}
+
+.math-btn {
+	height: 100%;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	/*text-align: center;*/
+}
+
+.math-btn * {
+	text-align: center;
+	vertical-align: middle;
 }

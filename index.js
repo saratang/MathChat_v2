@@ -21,8 +21,16 @@ var port = app.get('port');
 
 app.get("/", function(req, res){
     sess=req.session;
-    res.render("page");
+    if (typeof sess.user_sess != 'undefined' && typeof sess.user_sess.user_id != 'undefined') {
+        res.render("chatroom");
+    } else {
+        res.render("page");
+    }
 });
+
+// app.get('/chatroom', function(req,res) {
+//     sess=req.session;
+// });
 
 app.post('/login',function(req,res){
 	sess=req.session;
