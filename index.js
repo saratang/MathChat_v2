@@ -72,9 +72,6 @@ io.sockets.on('connection', function (socket) {
     // 	socket.emit('server_message', { message: name + ' left the chatroom.' });
     // });
     socket.on('send', function (data) {
-        if (data.message) {
-            data.message = escape_tags(data.message);
-        }
         io.sockets.emit('message', data);
     });
     socket.on('new_user', function () {
@@ -105,8 +102,4 @@ function makeid()
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
-}
-
-function escape_tags(message) {
-    return message.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') ;
 }

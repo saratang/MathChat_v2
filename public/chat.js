@@ -57,9 +57,12 @@ window.onload = function() {
     });
 
     //If user unloads window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
-    $(window).unload(function() {
+    window.unload = function() {
         socket.emit('exit', {name: sess.name});
-    });
+    }
+    // $(window).unload(function() {
+    //     socket.emit('exit', {name: sess.name});
+    // });
 
     //If user logs out
     $("#logout").click(function() {
@@ -118,10 +121,12 @@ window.onload = function() {
                 var html = '';
                 var i = messages.length - 1;
                 current_index = i;
+                message = escape_tags(messages[i].message);
+                message = new_line(message);
 
                 if (i != 0 && messages[i-1].user_id == messages[i].user_id) {
                     // console.log(i);
-                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div>';
+                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + message + '</div>';
 
                     var j = i - 1;
                     while (!$("#msgbox_" + messages[j].id).length) {
@@ -134,14 +139,14 @@ window.onload = function() {
                     console.log(i);
                     html += '<div class="msgcontainer"><div class="userbox text-center"><b>' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
                     html += '<div class="msgbox" id="msgbox_' + messages[i].id + '">';
-                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div></div></div>';
+                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + message + '</div></div></div>';
                     $("#chatbox").append(html);
                 }
                 //}
                 //$("#chatbox").append(html);
                 blip.play();
                 
-                MathJax.Hub.Queue(["Typeset", MathJax.Hub, messages[i].message]);
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, message]);
                 $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
             } else {
                 console.log("There is a problem:", data);
@@ -349,7 +354,7 @@ function format(message) {
     var text = autocomplete(message, "$$");
     text = autocomplete(text, "$");
     // text = escape_tags(text);
-    return new_line(text);
+    return text;
 }
 
 function escape_tags(message) {
@@ -357,7 +362,7 @@ function escape_tags(message) {
 }
 
 function new_line(message) {
-    return message.replace(/\n/,'<br />');
+    return message.replace(/\n/g,'<br />');
 }
 
 function autocomplete(message, identifier) {
