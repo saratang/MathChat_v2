@@ -17,9 +17,9 @@ html
                     a#homelink(href='/') M$\alpha$thChat
             #chatroom
                 .row
-                    .col-md-6
+                    .col-xs-6
                         .row
-                            .col-md-12
+                            .col-xs-12
                                 #greeting
                                     p You are currently logged in as 
                                     button#logout.btn.btn-default(type='button') Logout
@@ -28,32 +28,30 @@ html
                                     span
                                         p  is typing...
                         .row
-                            .col-md-12
+                            .col-xs-12
                                 .controls.input-group(style='margin-top: 10px')
                                     textarea#field.form-control(style='height: 60px')
                                     span.input-group-btn
                                         button#send.btn.btn-default(type='button', style='height:60px; width:60px') Send
-                    .col-md-6
+                    .col-xs-6
+                        h3 Currently Chatting
+                        #onlinebox
                         h3 Common Math Stuff ^_^
                         #mathbox
                             .row
-                                #integral.btn.btn-default.col-md-4.math-btn(type='button' value='$\\int_{0}^{\\infty}f(x) dx$') $\int_{0}^{\infty}f(x) dx$
+                                #integral.btn.btn-default.col-xs-4.math-btn(type='button' value='$\\int_{0}^{\\infty}f(x) dx$') $\int_{0}^{\infty}f(x) dx$
                                     //- span $$\int_{a}^{b}f(x)$$
-                                #summation.btn.btn-default.col-md-4.math-btn(type='button' value='$\\sum_{i=1}^{n}$') $\sum_{i=1}^{n}$
+                                #summation.btn.btn-default.col-xs-4.math-btn(type='button' value='$\\sum_{i=1}^{n}$') $\sum_{i=1}^{n}$
                                     //- span $$\sum_{i=1}^{n}$$
-                                #fraction.btn.btn-default.col-md-4.math-btn(type='button' value='$\\frac{a}{b}$') $\frac{a}{b}$
+                                #fraction.btn.btn-default.col-xs-4.math-btn(type='button' value='$\\frac{a}{b}$') $\frac{a}{b}$
                                     span 
                             .row
-                                #matrix.btn.btn-default.col-md-4.math-btn(type='button' value='\\[ \\left( \\begin{array}{ccc}a & b & c \\\\d & e & f \\\\g & h & i \\end{array} \\right)\\]') \[ \left( \begin{array}{ccc}a & b & c \\d & e & f \\g & h & i \end{array} \right)\]
-                                #sin.btn.btn-default.col-md-4.math-btn(type='button' value='$\\sin ^2 \\theta + \\cos ^2 \\theta = 1$') $\sin ^2 \theta + \cos ^2 \theta = 1$
-                                #limit.btn.btn-default.col-md-4.math-btn(type='button' value='$\\lim_{x \\to \\infty}f(x)$') $\lim_{x \to \infty}f(x)$
+                                #matrix.btn.btn-default.col-xs-4.math-btn(type='button' value='\\[ \\left( \\begin{array}{ccc}a & b & c \\\\d & e & f \\\\g & h & i \\end{array} \\right)\\]') \[ \left( \begin{array}{ccc}a & b & c \\d & e & f \\g & h & i \end{array} \right)\]
+                                #sin.btn.btn-default.col-xs-4.math-btn(type='button' value='$\\sin ^2 \\theta + \\cos ^2 \\theta = 1$') $\sin ^2 \theta + \cos ^2 \theta = 1$
+                                #limit.btn.btn-default.col-xs-4.math-btn(type='button' value='$\\lim_{x \\to \\infty}f(x)$') $\lim_{x \to \infty}f(x)$
                             .row
-                                #polynomial.btn.btn-default.col-md-8.math-btn(type='button' value='$a_n x^n + a_{n-1} x^{n-1} + \\dots + a_1 x_1 + a_0$') $a_n x^n + a_{n-1} x^{n-1} + \dots + a_1 x_1 + a_0$
-                                #equation-array.btn.btn-default.col-md-4.math-btn(type='button' value='$|a+b| \\leq |a| + |b|$') $|a+b| \leq |a| + |b|$
-                            .row
-                                .col-md-4
-                                .col-md-4
-                                .col-md-4
+                                #polynomial.btn.btn-default.col-xs-8.math-btn(type='button' value='$a_n x^n + a_{n-1} x^{n-1} + \\dots + a_1 x_1 + a_0$') $a_n x^n + a_{n-1} x^{n-1} + \dots + a_1 x_1 + a_0$
+                                #equation-array.btn.btn-default.col-xs-4.math-btn(type='button' value='$|a+b| \\leq |a| + |b|$') $|a+b| \leq |a| + |b|$
 
                 
                     //- .col-md-6

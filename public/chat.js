@@ -1,5 +1,5 @@
 window.onload = function() {
-
+    var online_users = [];
     var messages = [];
     var current_index;
     var socket = io.connect(window.location.origin || window.location.protocol + '//' + window.location.hostname + ':' + window.location.port);
@@ -12,24 +12,49 @@ window.onload = function() {
     var sess;
     //var global_sess;
 
+    function server_message(message) {
+        messages.push(message);
+        var html = '';
+        var i = messages.length - 1;
+        var id = makeid();
+
+        html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + id + '">';
+        html += '<div class="serverln text-center" id="servermsg_' + id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
+        
+        $("#chatbox").append(html);
+        blip.play();
+    }
+
+    // function add_to_onlinebox(user_sess) {
+    //     online_users.push(user_sess);
+    //     var len = messages.length;
+    //     var html = '';
+
+    //     for (i=0; i<len; i++) {
+    //         html += html += '<div class="online_user" id="online_user_' + online_users[i].user_id + '">' + online_users[i].name + '</div>';
+    //     }
+    //     $('#onlinebox').append(html);
+    // }
+
     socket.on('server_message', function (data) {
         if(data.message) {
-            messages.push(data);
-            var html = '';
-            var i = messages.length - 1;
-            var id = makeid();
-
-            html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + id + '">';
-            html += '<div class="serverln text-center" id="servermsg_' + id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
-            
-            $("#chatbox").append(html);
-            blip.play();
+            server_message(data);
         } else {
             console.log("There is a problem:", data);
         }
 
+        if (data.user && data.user.user_id && data.user.name) {
+            // add_to_onlinebox(data.user);
+        }
+        console.log(data);
+
         //MathJax.Hub.Queue(["Typset", MathJax.Hub, messages[i].message]);
         $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
+    });
+
+    //If user closes window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
+    $(window).unload(function() {
+        socket.emit('exit');
     });
 
     //If user logs out
@@ -46,16 +71,21 @@ window.onload = function() {
             // alert('sess and sess.name are defined');
             //$('#welcome').hide();
             //$('#chatroom').show();
-            $('#greeting p').append('<b>' + sess.name + '</b>.');
+            // $('#greeting p').append('<b>' + sess.name + '</b>.');
             //$('#online').append('<div>' + sess.name + '</div>');
-            socket.emit('enter');
+            // socket.emit('enter');
+            return true;
         }
+        return false;
     }
 
     function get_user_sess (data) {
         sess = data.user_sess;
         // console.log(sess);
-        login(sess);
+        if (login(sess)) {
+            $('#greeting p').append('<b>' + sess.name + '</b>.');
+            socket.emit('enter');
+        }
         socket.removeListener('send_user_sess', get_user_sess);
     }
 
@@ -196,11 +226,55 @@ window.onload = function() {
         }
 
         //Pushing Tab should autocomplete...
-
     })
     .keydown(function(e) {
         if (e.keyCode == 38) {
             return false;
+        }
+
+        //Prevent close bracket upon complete
+        if (e.keyCode == 221 && e.shiftKey) {
+
+        }
+    })
+    .keypress(function(e) {
+        //Complete bracket
+        // console.log(e.keyCode);
+
+        var open_to_close = {123: 125, 40: 41, 91: 93};
+        var close_to_open = {125: 123, 41: 40, 93: 91};
+
+        for (var open in open_to_close) {
+            if (e.keyCode == open) {
+                // console.log(open);
+                complete_bracket(this, open_to_close[open]);
+            }
+        }
+
+        for (var close in close_to_open) {
+            if (e.keyCode == close) {
+                prevent_close(this, close_to_open[close]);
+            }
+        }
+
+        function complete_bracket(textarea, close) {
+            // console.log(shift_open_to_closed[open]);
+            var content = textarea.value;
+            var caret = getCaret(textarea);
+            // console.log(caret);
+            textarea.value = content.substring(0, caret) + String.fromCharCode(close) + content.substring(caret, content.length);
+            $('#field').setCaret(caret);
+        }
+
+        function prevent_close(textarea, open) {
+            var content = textarea.value;
+            var caret = getCaret(textarea);
+            console.log(content.substring(caret - 1, caret));
+            if (content.substring(caret - 1, caret) == String.fromCharCode(open)) {
+                textarea.value = content.substring(0, caret) + content.substring(caret + 1, content.length);
+                $('#field').setCaret(caret + 1);
+                // return false;
+            }
         }
     });
 
@@ -318,3 +392,19 @@ function getCaret(el) {
   }  
   return 0;
 }
+
+$.fn.setCaret = function(start, end) {
+    if(!end) end = start; 
+    return this.each(function() {
+        if (this.setSelectionRange) {
+            this.focus();
+            this.setSelectionRange(start, end);
+        } else if (this.createTextRange) {
+            var range = this.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', end);
+            range.moveStart('character', start);
+            range.select();
+        }
+    });
+};

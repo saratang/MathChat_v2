@@ -76,10 +76,10 @@ io.sockets.on('connection', function (socket) {
         io.sockets.emit('send_global_sess', sess);
     });
     socket.on('enter', function() {
-        io.sockets.emit('server_message', { message: sess.user_sess.name + ' entered the chatroom.'});
+        io.sockets.emit('server_message', { user: sess.user_sess, message: sess.user_sess.name + ' entered the chatroom.'});
     });
     socket.on('exit', function (data) {
-        io.sockets.emit('server_message', { message: sess.user_sess.name + ' left the chatroom.' });
+        io.sockets.emit('server_message', { user: sess.user_sess.name, message: sess.user_sess.name + ' left the chatroom.' });
     });
     socket.on('typing', function (data) {
         socket.broadcast.emit('typing_message', data);
