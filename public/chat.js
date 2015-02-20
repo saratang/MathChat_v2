@@ -17,10 +17,9 @@ window.onload = function() {
             messages.push(data);
             var html = '';
             var i = messages.length - 1;
-            var id = makeid();
 
-            html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + id + '">';
-            html += '<div class="serverln text-center" id="servermsg_' + id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
+            html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
+            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
             
             $("#chatbox").append(html);
             blip.play();
@@ -50,14 +49,14 @@ window.onload = function() {
         if (data.user && data.user.user_id && data.user.name) {
             // add_to_onlinebox(data.user);
         }
-        console.log(data);
+        // console.log(data);
 
         //MathJax.Hub.Queue(["Typset", MathJax.Hub, messages[i].message]);
         $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
     });
 
     //If user unloads window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
-    window.unload = function() {
+    window.onbeforeunload = function() {
         socket.emit('exit', {name: sess.name});
     }
     // $(window).unload(function() {
@@ -126,20 +125,20 @@ window.onload = function() {
 
                 if (i != 0 && messages[i-1].user_id == messages[i].user_id) {
                     // console.log(i);
-                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + message + '</div>';
+                    html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div>';
 
                     var j = i - 1;
-                    while (!$("#msgbox_" + messages[j].id).length) {
+                    while (!$("#msgbox_" + messages[j].msgbox_id).length) {
                         j--;
                     }
 
-                    $("#msgbox_" + messages[j].id).append(html);
+                    $("#msgbox_" + messages[j].msgbox_id).append(html);
                 } else {
                 //for(var i=0; i<messages.length; i++) {
-                    console.log(i);
+                    // console.log(i);
                     html += '<div class="msgcontainer"><div class="userbox text-center"><b>' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
-                    html += '<div class="msgbox" id="msgbox_' + messages[i].id + '">';
-                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + message + '</div></div></div>';
+                    html += '<div class="msgbox" id="msgbox_' + messages[i].msgbox_id + '">';
+                    html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div></div></div>';
                     $("#chatbox").append(html);
                 }
                 //}
@@ -238,6 +237,9 @@ window.onload = function() {
         }
     })
     .keydown(function(e) {
+        if (e.keyCode == 13) {
+            return false;
+        }
         if (e.keyCode == 38) {
             return false;
         }
@@ -266,7 +268,7 @@ window.onload = function() {
     })
     .keypress(function(e) {
         //Complete bracket
-        console.log(e.keyCode);
+        // console.log(e.keyCode);
 
         var open_to_close = {123: 125, 40: 41, 91: 93, 36: 36};
         var close_to_open = {125: 123, 41: 40, 93: 91};
@@ -296,7 +298,7 @@ window.onload = function() {
         function prevent_close(textarea, open) {
             var content = textarea.value;
             var caret = getCaret(textarea);
-            console.log(content.substring(caret - 1, caret));
+            // console.log(content.substring(caret - 1, caret));
             if (content.substring(caret - 1, caret) == String.fromCharCode(open)) {
                 textarea.value = content.substring(0, caret) + content.substring(caret + 1, content.length);
                 $('#field').setCaret(caret + 1);
@@ -310,7 +312,7 @@ window.onload = function() {
         // console.log('Trimmed: ' + field.value.trim());
         var text = format(field.value.trim());
         // console.log('After: ' + text);
-        socket.emit('send', { message: text, username: sess.name, id: makeid(), user_id: sess.user_id});
+        socket.emit('send', { message: text, username: sess.name, user_id: sess.user_id});
         field.value = "";
         socket.emit('not_typing');
         //$("#typing span").addClass("invisible");
@@ -386,17 +388,6 @@ function autocomplete(message, identifier) {
     }
 
     return message
-}
-
-function makeid()
-{
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < 8; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
 }
 
 function getCaret(el) {

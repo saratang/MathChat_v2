@@ -37,13 +37,13 @@ app.post('/login',function(req,res){
 	//In this we are assigning email to sess.name variable.
 	//name comes from HTML page.
     sess.user_sess = {};
-    sess.user_sess.name=req.body.name;
-    sess.user_sess.user_id = makeid();
+    sess.user_sess.name=escape_tags(req.body.name);
+    sess.user_sess.user_id = make_id();
     
     sess.global_sess = [];
     sess.global_sess.push(req.body.name);
     // sess.name = req.body.name;
-    // sess.user_id = makeid();
+    // sess.user_id = make_id();
     console.log(req);
 	res.end('done');
 });
@@ -72,6 +72,8 @@ io.sockets.on('connection', function (socket) {
     // 	socket.emit('server_message', { message: name + ' left the chatroom.' });
     // });
     socket.on('send', function (data) {
+        data.msg_id = make_id();
+        data.msgbox_id = make_id();
         io.sockets.emit('message', data);
     });
     socket.on('new_user', function () {
@@ -79,10 +81,10 @@ io.sockets.on('connection', function (socket) {
         io.sockets.emit('send_global_sess', sess);
     });
     socket.on('enter', function (data) {
-        io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.'});
+        io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id() });
     });
     socket.on('exit', function (data) {
-        io.sockets.emit('server_message', { message: data.name + ' left the chatroom.' });
+        io.sockets.emit('server_message', { message: data.name + ' left the chatroom.', id: make_id() });
     });
     socket.on('typing', function (data) {
         socket.broadcast.emit('typing_message', data);
@@ -93,7 +95,7 @@ io.sockets.on('connection', function (socket) {
 });
 
 //////////HELPER FUNCTIONS//////////////
-function makeid()
+function make_id()
 {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -102,4 +104,8 @@ function makeid()
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
+}
+
+function escape_tags(message) {
+    return message.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') ;
 }
