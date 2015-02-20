@@ -348,7 +348,7 @@ function validate_name(username) {
 function format(message) {
     var text = autocomplete(message, "$$");
     text = autocomplete(text, "$");
-    text = escape_tags(text);
+    // text = escape_tags(text);
     return new_line(text);
 }
 
