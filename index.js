@@ -48,7 +48,10 @@ app.post('/login',function(req,res){
 	res.end('done');
 });
 
+// var name;
 app.get('/logout', function(req, res) {
+    // sess = req.session;
+    // name = sess.user_sess.name;
     req.session.destroy(function(err) {
         if (err) {
             console.log(err);
@@ -65,8 +68,8 @@ console.log("Listening on port " + port);
 
 io.sockets.on('connection', function (socket) {
     // socket.emit('server_message', { message: sess.name + ' entered the chatroom.' });
-    // socket.on('disconnect', function() {
-    // 	socket.emit('server_message', { message: sess.name + ' left the chatroom.' });
+    // socket.on('disconnect', function () {
+    // 	socket.emit('server_message', { message: name + ' left the chatroom.' });
     // });
     socket.on('send', function (data) {
         io.sockets.emit('message', data);
@@ -75,11 +78,11 @@ io.sockets.on('connection', function (socket) {
         io.sockets.emit('send_user_sess', sess);
         io.sockets.emit('send_global_sess', sess);
     });
-    socket.on('enter', function() {
-        io.sockets.emit('server_message', { user: sess.user_sess, message: sess.user_sess.name + ' entered the chatroom.'});
+    socket.on('enter', function (data) {
+        io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.'});
     });
     socket.on('exit', function (data) {
-        io.sockets.emit('server_message', { user: sess.user_sess.name, message: sess.user_sess.name + ' left the chatroom.' });
+        io.sockets.emit('server_message', { message: data.name + ' left the chatroom.' });
     });
     socket.on('typing', function (data) {
         socket.broadcast.emit('typing_message', data);

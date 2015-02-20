@@ -12,9 +12,9 @@ window.onload = function() {
     var sess;
     //var global_sess;
 
-    function server_message(message) {
-        if (logged_in) {
-            messages.push(message);
+    function server_message(data) {
+        if (logged_in(sess)) {
+            messages.push(data);
             var html = '';
             var i = messages.length - 1;
             var id = makeid();
@@ -45,6 +45,8 @@ window.onload = function() {
             console.log("There is a problem:", data);
         }
 
+        // server_message(d)
+
         if (data.user && data.user.user_id && data.user.name) {
             // add_to_onlinebox(data.user);
         }
@@ -54,15 +56,15 @@ window.onload = function() {
         $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
     });
 
-    //If user closes window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
+    //If user unloads window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
     $(window).unload(function() {
-        socket.emit('exit');
+        socket.emit('exit', {name: sess.name});
     });
 
     //If user logs out
     $("#logout").click(function() {
         //alert('clicked!');
-        socket.emit('exit');
+        // socket.emit('exit', {name: sess.name});
         $.get("/logout", function() {
             window.location.href='/';
         });
@@ -86,7 +88,7 @@ window.onload = function() {
         // console.log(sess);
         if (logged_in(sess)) {
             $('#greeting p').append('<b>' + sess.name + '</b>.');
-            socket.emit('enter');
+            socket.emit('enter', {name: sess.name});
         }
         socket.removeListener('send_user_sess', get_user_sess);
     }
@@ -110,7 +112,7 @@ window.onload = function() {
     });
 
     socket.on('message', function (data) {
-        if (logged_in) {
+        if (logged_in(sess)) {
             if(data.message) {
                 messages.push(data);
                 var html = '';
