@@ -224,28 +224,41 @@ window.onload = function() {
                 this.value = messages[current_index].message;
             }
         }
-
-        //Pushing Tab should autocomplete...
     })
     .keydown(function(e) {
         if (e.keyCode == 38) {
             return false;
         }
 
-        //Prevent close bracket upon complete
-        if (e.keyCode == 221 && e.shiftKey) {
+        var open_to_close = { "{": "}", "(": ")", "[": "]", "$": "$"};
+        function delete_both_brackets(textarea) {
+            var content = textarea.value;
+            var caret = getCaret(textarea);
+            // console.log('Caret: ' + caret);
+            // console.log('Previous char: ' + content.substring(caret - 1, caret));
+            // console.log('Next char: ' + content.substring(caret, caret + 1));
+            for (var open in open_to_close) {
+                if (open_to_close.hasOwnProperty(open) && content.substring(caret - 1, caret) == open && content.substring(caret, caret+1) == open_to_close[open]) {
+                    textarea.value = content.substring(0, caret - 1) + content.substring(caret, content.length);
+                }
+            }
+            $('#field').setCaret(caret);
+            return false;
+        }
 
+        if (e.keyCode == 8) {
+            delete_both_brackets(field);
         }
     })
     .keypress(function(e) {
         //Complete bracket
-        // console.log(e.keyCode);
+        console.log(e.keyCode);
 
-        var open_to_close = {123: 125, 40: 41, 91: 93};
+        var open_to_close = {123: 125, 40: 41, 91: 93, 36: 36};
         var close_to_open = {125: 123, 41: 40, 93: 91};
 
         for (var open in open_to_close) {
-            if (e.keyCode == open) {
+            if (open_to_close.hasOwnProperty(open) && e.keyCode == open) {
                 // console.log(open);
                 complete_bracket(this, open_to_close[open]);
             }
