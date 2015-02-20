@@ -13,16 +13,18 @@ window.onload = function() {
     //var global_sess;
 
     function server_message(message) {
-        messages.push(message);
-        var html = '';
-        var i = messages.length - 1;
-        var id = makeid();
+        if (logged_in) {
+            messages.push(message);
+            var html = '';
+            var i = messages.length - 1;
+            var id = makeid();
 
-        html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + id + '">';
-        html += '<div class="serverln text-center" id="servermsg_' + id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
-        
-        $("#chatbox").append(html);
-        blip.play();
+            html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + id + '">';
+            html += '<div class="serverln text-center" id="servermsg_' + id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
+            
+            $("#chatbox").append(html);
+            blip.play();
+        }
     }
 
     // function add_to_onlinebox(user_sess) {
@@ -66,7 +68,7 @@ window.onload = function() {
         });
     });
 
-    function login(sess) {
+    function logged_in(sess) {
         if (typeof sess != 'undefined' && typeof sess.name != 'undefined') {
             // alert('sess and sess.name are defined');
             //$('#welcome').hide();
@@ -82,7 +84,7 @@ window.onload = function() {
     function get_user_sess (data) {
         sess = data.user_sess;
         // console.log(sess);
-        if (login(sess)) {
+        if (logged_in(sess)) {
             $('#greeting p').append('<b>' + sess.name + '</b>.');
             socket.emit('enter');
         }
@@ -108,38 +110,40 @@ window.onload = function() {
     });
 
     socket.on('message', function (data) {
-        if(data.message) {
-            messages.push(data);
-            var html = '';
-            var i = messages.length - 1;
-            current_index = i;
+        if (logged_in) {
+            if(data.message) {
+                messages.push(data);
+                var html = '';
+                var i = messages.length - 1;
+                current_index = i;
 
-            if (i != 0 && messages[i-1].user_id == messages[i].user_id) {
-                // console.log(i);
-                html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div>';
+                if (i != 0 && messages[i-1].user_id == messages[i].user_id) {
+                    // console.log(i);
+                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div>';
 
-                var j = i - 1;
-                while (!$("#msgbox_" + messages[j].id).length) {
-                    j--;
+                    var j = i - 1;
+                    while (!$("#msgbox_" + messages[j].id).length) {
+                        j--;
+                    }
+
+                    $("#msgbox_" + messages[j].id).append(html);
+                } else {
+                //for(var i=0; i<messages.length; i++) {
+                    console.log(i);
+                    html += '<div class="msgcontainer"><div class="userbox text-center"><b>' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
+                    html += '<div class="msgbox" id="msgbox_' + messages[i].id + '">';
+                    html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div></div></div>';
+                    $("#chatbox").append(html);
                 }
-
-                $("#msgbox_" + messages[j].id).append(html);
+                //}
+                //$("#chatbox").append(html);
+                blip.play();
+                
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, messages[i].message]);
+                $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
             } else {
-            //for(var i=0; i<messages.length; i++) {
-                console.log(i);
-                html += '<div class="msgcontainer"><div class="userbox text-center"><b>' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
-                html += '<div class="msgbox" id="msgbox_' + messages[i].id + '">';
-                html += '<div class="msgln text-center" id="msg_' + messages[i].id + '">' + messages[i].message + '</div></div></div>';
-                $("#chatbox").append(html);
+                console.log("There is a problem:", data);
             }
-            //}
-            //$("#chatbox").append(html);
-            blip.play();
-            
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, messages[i].message]);
-            $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
-        } else {
-            console.log("There is a problem:", data);
         }
     });
 
@@ -149,15 +153,22 @@ window.onload = function() {
         }
     });
 
-    $("#typing span").addClass("invisible");
+    ///////*************************** BELOW ****************************///////
+    ///////**************************** ARE *****************************///////
+    ///////*************************** A LOT ****************************///////
+    ///////**************************** OF ******************************///////
+    ///////*************************** FIELD ****************************///////
+    ///////************************** METHODS ***************************///////
+
+    $("#typing span p").addClass("invisible");
     
     socket.on('typing_message', function(data) {
-        $("#typing span").html("<p>" + data.user + " is typing...</p>")
+        $("#typing span p").html(data.user + " is typing...")
         .removeClass("invisible");
     });
 
     socket.on('remove_typing_message', function(data) {
-        $("#typing span").html("")
+        $("#typing span p").html("is typing...")
         .addClass("invisible");
     })
 
@@ -166,6 +177,7 @@ window.onload = function() {
     // } else {
     //     socket.emit('not_typing');
     // }
+
 
     $("#field").focusin(function() {
         if (this.value != '') {
@@ -183,13 +195,6 @@ window.onload = function() {
         if (this.value != '') {
             socket.emit('typing', {user: sess.name});
         }
-        //Pushing Enter or Shft + Enter
-        // if (e.keyCode == 13 && e.shiftKey) {
-        //     var content = field.value;
-        //     var caret = getCaret(this);
-        //     field.value = content.substring(0, caret) + "\n" + content.substring(caret, content.length);
-        //     e.stopPropagation();
-        // } else 
 
         if (e.keyCode == 13 && !e.shiftKey) {
             if (field.value != '') {
@@ -240,10 +245,12 @@ window.onload = function() {
             for (var open in open_to_close) {
                 if (open_to_close.hasOwnProperty(open) && content.substring(caret - 1, caret) == open && content.substring(caret, caret+1) == open_to_close[open]) {
                     textarea.value = content.substring(0, caret - 1) + content.substring(caret, content.length);
+                    $('#field').setCaret(caret);
+                    return false;
                 }
             }
-            $('#field').setCaret(caret);
-            return false;
+            // $('#field').setCaret(caret);
+            // return false;
         }
 
         if (e.keyCode == 8) {
