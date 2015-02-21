@@ -18,10 +18,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 var sess;
 var port = app.get('port');
+var user_sessions = {};
 
 app.get("/", function(req, res){
     sess=req.session;
-    if (typeof sess.user_sess != 'undefined' && typeof sess.user_sess.user_id != 'undefined') {
+    if (typeof sess.user_sess != 'undefined' && typeof sess.user_sess.private_id != 'undefined') {
         res.render("chatroom");
     } else {
         res.render("page");
@@ -37,14 +38,16 @@ app.post('/login',function(req,res){
 	//In this we are assigning email to sess.name variable.
 	//name comes from HTML page.
     sess.user_sess = {};
-    sess.user_sess.name=escape_tags(req.body.name);
-    sess.user_sess.user_id = make_id();
+    sess.user_sess.name=req.body.name;
+    sess.user_sess.private_id = make_id();
+    sess.user_sess.public_id = make_id();
+    // user_sessions.push(sess.user_sess);
     
     sess.global_sess = [];
     sess.global_sess.push(req.body.name);
     // sess.name = req.body.name;
     // sess.user_id = make_id();
-    console.log(req);
+    // console.log(req);
 	res.end('done');
 });
 
@@ -72,19 +75,47 @@ io.sockets.on('connection', function (socket) {
     // 	socket.emit('server_message', { message: name + ' left the chatroom.' });
     // });
     socket.on('send', function (data) {
+        var private_id = data.private_id;
+        for (var user in user_sessions) {
+            if (user == private_id) {
+                for (var prop in user_sessions[user]) {
+                    if (prop == 'public_id') {
+                        data.public_id = user_sessions[user][prop];
+                    }
+                }
+            }
+        }
+        delete data.private_id;
         data.msg_id = make_id();
         data.msgbox_id = make_id();
         io.sockets.emit('message', data);
     });
     socket.on('new_user', function () {
-        io.sockets.emit('send_user_sess', sess);
-        io.sockets.emit('send_global_sess', sess);
+        user_sessions[sess.user_sess.private_id] = sess.user_sess;
+        console.log(user_sessions);
+        // var online_users = get_online_users(user_sessions);
+        // console.log(online_users);
+
+        io.sockets.emit('send_user_sess', {sess: sess.user_sess});
+            // , online: online_users 
+        // });
     });
     socket.on('enter', function (data) {
+        console.log(data.name + ' entered.');
+        var online_users = get_online_users(user_sessions);
         io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id() });
+        io.sockets.emit('update_users', {online: online_users});
     });
     socket.on('exit', function (data) {
+        console.log(data.name + ' exited.');
+        delete user_sessions[data.private_id];
+        console.log(user_sessions);
+
+        var online_users = get_online_users(user_sessions);
+        console.log(online_users);
+
         io.sockets.emit('server_message', { message: data.name + ' left the chatroom.', id: make_id() });
+        io.sockets.emit('update_users', {online: online_users});
     });
     socket.on('typing', function (data) {
         socket.broadcast.emit('typing_message', data);
@@ -95,6 +126,18 @@ io.sockets.on('connection', function (socket) {
 });
 
 //////////HELPER FUNCTIONS//////////////
+function get_online_users(user_sessions) {
+    var online_users = [];
+    for (var user in user_sessions) {
+        for (var prop in user_sessions[user]) {
+            if (prop == 'name') {
+                online_users.push(user_sessions[user][prop]);
+            }
+        }
+    }
+    return online_users;
+}
+
 function make_id()
 {
     var text = "";

@@ -17,9 +17,10 @@ window.onload = function() {
             messages.push(data);
             var html = '';
             var i = messages.length - 1;
+            var message = escape_tags(messages[i].message);
 
             html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
-            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '"><i>' + messages[i].message + '</i></div></div></div>'; 
+            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '"><i>' + message + '</i></div></div></div>'; 
             
             $("#chatbox").append(html);
             blip.play();
@@ -32,7 +33,7 @@ window.onload = function() {
     //     var html = '';
 
     //     for (i=0; i<len; i++) {
-    //         html += html += '<div class="online_user" id="online_user_' + online_users[i].user_id + '">' + online_users[i].name + '</div>';
+    //         html += html += '<div class="online_user" id="online_user_' + online_users[i].public_id + '">' + online_users[i].name + '</div>';
     //     }
     //     $('#onlinebox').append(html);
     // }
@@ -44,9 +45,7 @@ window.onload = function() {
             console.log("There is a problem:", data);
         }
 
-        // server_message(d)
-
-        if (data.user && data.user.user_id && data.user.name) {
+        if (data.user && data.user.public_id && data.user.name) {
             // add_to_onlinebox(data.user);
         }
         // console.log(data);
@@ -55,9 +54,19 @@ window.onload = function() {
         $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
     });
 
+    socket.on('update_users', function (data) {
+        var html = ''
+        var online_users = data.online;
+
+        for (var i=0; i<online_users.length; i++) {
+            html += '<div>' + online_users[i] + '</div>';
+        }
+        $('#onlinebox').html(html);        
+    });
+
     //If user unloads window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
     window.onbeforeunload = function() {
-        socket.emit('exit', {name: sess.name});
+        socket.emit('exit', {name: sess.name, private_id: sess.private_id});
     }
     // $(window).unload(function() {
     //     socket.emit('exit', {name: sess.name});
@@ -73,7 +82,7 @@ window.onload = function() {
     });
 
     function logged_in(sess) {
-        if (typeof sess != 'undefined' && typeof sess.name != 'undefined') {
+        if (typeof sess != 'undefined' && typeof sess.private_id != 'undefined') {
             // alert('sess and sess.name are defined');
             //$('#welcome').hide();
             //$('#chatroom').show();
@@ -86,10 +95,19 @@ window.onload = function() {
     }
 
     function get_user_sess (data) {
-        sess = data.user_sess;
+        sess = data.sess;
         // console.log(sess);
         if (logged_in(sess)) {
-            $('#greeting p').append('<b>' + sess.name + '</b>.');
+            $('#greeting p').append('<b>' + escape_tags(sess.name) + '</b>.');
+
+            // var html = ''
+            // var online_users = data.online;
+
+            // for (var i=0; i<online_users.length; i++) {
+            //     html += '<div>' + online_users[i] + '</div>';
+            // }
+            // $('#onlinebox').html(html);
+
             socket.emit('enter', {name: sess.name});
         }
         socket.removeListener('send_user_sess', get_user_sess);
@@ -123,7 +141,7 @@ window.onload = function() {
                 message = escape_tags(messages[i].message);
                 message = new_line(message);
 
-                if (i != 0 && messages[i-1].user_id == messages[i].user_id) {
+                if (i != 0 && messages[i-1].public_id == messages[i].public_id) {
                     // console.log(i);
                     html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div>';
 
@@ -193,6 +211,9 @@ window.onload = function() {
     
     .focusout(function() {
         socket.emit('not_typing');
+        if (this.value == '') {
+            current_index = messages.length - 1;
+        }
         //$("#typing span").addClass("invisible");
     })
 
@@ -200,6 +221,10 @@ window.onload = function() {
         //Typing should show "User is typing"
         if (this.value != '') {
             socket.emit('typing', {user: sess.name});
+        }
+
+        if (e.keyCode == 13 && e.shiftKey) {
+            add_line(this);
         }
 
         if (e.keyCode == 13 && !e.shiftKey) {
@@ -210,16 +235,19 @@ window.onload = function() {
 
         //Pushing Up should pull up last message
         if (e.keyCode == 38) {
-            if (messages[current_index].user_id == sess.user_id) {
+            //if not last message you typed...
+            if (messages[current_index].public_id == sess.public_id) {
                 this.value = messages[current_index].message;
             }
 
-            if (current_index > 0) {
+            if (current_index > 1) {
                 do {
-                    current_index--;
-                    // console.log(current_index);
-                } while (messages[current_index].user_id != sess.user_id && current_index > 0);
+                   current_index--;
+                } while (messages[current_index].public_id != sess.public_id && current_index > 0);
             }
+
+            console.log('Up: ' + current_index);
+            console.log(messages[current_index].message);
         }
 
         //Pushing Down should go to "next" message
@@ -228,12 +256,16 @@ window.onload = function() {
                 do {
                     current_index++;
                     // console.log(current_index);
-                } while (messages[current_index].user_id != sess.user_id && current_index < messages.length - 1);
-            }
-            
-            if (messages[current_index].user_id == sess.user_id) {
+                } while (messages[current_index].public_id != sess.public_id && current_index < messages.length - 1);
                 this.value = messages[current_index].message;
             }
+            
+            if (messages[current_index].public_id == sess.public_id) {
+                this.value = messages[current_index].message;
+            }
+
+            console.log('Down: ' + current_index);
+            console.log(messages[current_index].message);
         }
     })
     .keydown(function(e) {
@@ -263,7 +295,7 @@ window.onload = function() {
         }
 
         if (e.keyCode == 8) {
-            delete_both_brackets(field);
+            delete_both_brackets(this);
         }
     })
     .keypress(function(e) {
@@ -312,7 +344,7 @@ window.onload = function() {
         // console.log('Trimmed: ' + field.value.trim());
         var text = format(field.value.trim());
         // console.log('After: ' + text);
-        socket.emit('send', { message: text, username: sess.name, user_id: sess.user_id});
+        socket.emit('send', { message: text, username: sess.name, private_id: sess.private_id });
         field.value = "";
         socket.emit('not_typing');
         //$("#typing span").addClass("invisible");
@@ -388,6 +420,12 @@ function autocomplete(message, identifier) {
     }
 
     return message
+}
+
+function add_line(textarea) {
+    var content = textarea.value;
+    var caret = getCaret(textarea);
+    textarea.value = content.substring(0, caret) + '\n' + content.substring(caret, content.length);
 }
 
 function getCaret(el) {
