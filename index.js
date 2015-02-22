@@ -19,6 +19,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 var sess;
 var port = app.get('port');
 var user_sessions = {};
+var history = [];
 
 app.get("/", function(req, res){
     sess=req.session;
@@ -43,6 +44,7 @@ app.post('/login',function(req,res){
     sess.user_sess.name=req.body.name;
     sess.user_sess.private_id = make_id();
     sess.user_sess.public_id = make_id();
+    sess.user_sess.online = true;
     user_sessions[sess.user_sess.private_id] = sess.user_sess; 
 
     sess.global_sess = [];
@@ -99,13 +101,15 @@ io.sockets.on('connection', function (socket) {
     
     socket.on('enter', function (data) {
         console.log(data.name + ' entered.');
+        make_online(user_sessions, data.private_id);
         var online_users = get_online_users(user_sessions);
         io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id() });
         io.sockets.emit('update_users', {online: online_users});
     });
     socket.on('exit', function (data) {
         console.log(data.name + ' exited.');
-        delete user_sessions[data.private_id];
+        make_offline(user_sessions, data.private_id);
+        // delete user_sessions[data.private_id];
         console.log(user_sessions);
 
         var online_users = get_online_users(user_sessions);
@@ -123,12 +127,43 @@ io.sockets.on('connection', function (socket) {
 });
 
 //////////HELPER FUNCTIONS//////////////
+function make_online(user_sessions, private_id) {
+    for (var user in user_sessions) {
+        if (user == private_id) {
+            for (var prop in user_sessions[user]) {
+                if (prop == 'online') {
+                    user_sessions[user][prop] = true;
+                    console.log(user_sessions[user][prop]);
+                }
+            }
+        }
+    }
+}
+
+function make_offline(user_sessions, private_id) {
+    for (var user in user_sessions) {
+        if (user == private_id) {
+            for (var prop in user_sessions[user]) {
+                if (prop == 'online') {
+                    user_sessions[user][prop] = false;
+                }
+            }
+        }
+    }
+}
+
 function get_online_users(user_sessions) {
     var online_users = [];
     for (var user in user_sessions) {
         for (var prop in user_sessions[user]) {
-            if (prop == 'name') {
-                online_users.push(user_sessions[user][prop]);
+            if (prop == 'online') {
+                if (user_sessions[user][prop] == true) {
+                    for (var prop2 in user_sessions[user]) {
+                        if (prop2 == 'name') {
+                            online_users.push(user_sessions[user][prop2]);
+                        }
+                    }
+                }
             }
         }
     }

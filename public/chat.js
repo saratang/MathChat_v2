@@ -19,7 +19,7 @@ window.onload = function() {
             var i = messages.length - 1;
             var message = escape_tags(messages[i].message);
 
-            html += '<div class="msgcontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
+            html += '<div class="msgcontainer servercontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
             html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '"><i>' + message + '</i></div></div></div>'; 
             
             $("#chatbox").append(html);
@@ -103,7 +103,7 @@ window.onload = function() {
 		sess = jQuery.parseJSON(data);
         if (logged_in(sess)) {
             $('#greeting p').append('<b>' + escape_tags(sess.name) + '</b>.');
-            socket.emit('enter', {name: sess.name});
+            socket.emit('enter', {name: sess.name, private_id: sess.private_id});
         }
 	});
 
@@ -128,7 +128,7 @@ window.onload = function() {
                 message = escape_tags(messages[i].message);
                 message = new_line(message);
 
-                if (i != 0 && messages[i-1].public_id == messages[i].public_id) {
+                if (i != 0 && messages[i-1].public_id == messages[i].public_id && !(messages[i-1].id)) {
                     // console.log(i);
                     html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div>';
 
