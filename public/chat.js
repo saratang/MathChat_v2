@@ -94,31 +94,18 @@ window.onload = function() {
         return false;
     }
 
-    function get_user_sess (data) {
-        sess = data.sess;
-        // console.log(sess);
-        if (logged_in(sess)) {
-            $('#greeting p').append('<b>' + escape_tags(sess.name) + '</b>.');
-
-            // var html = ''
-            // var online_users = data.online;
-
-            // for (var i=0; i<online_users.length; i++) {
-            //     html += '<div>' + online_users[i] + '</div>';
-            // }
-            // $('#onlinebox').html(html);
-
-            socket.emit('enter', {name: sess.name});
-        }
-        socket.removeListener('send_user_sess', get_user_sess);
-    }
-
-    socket.on('send_user_sess', get_user_sess);
-    socket.on('send_global_sess', function (data) {
+	socket.on('send_global_sess', function (data) {
         global_sess = data.global_sess;
         // console.log(global_sess);
     });
-    socket.emit('new_user');
+	
+	$.get( "/user_sess", function( data ) {
+		sess = jQuery.parseJSON(data);
+        if (logged_in(sess)) {
+            $('#greeting p').append('<b>' + escape_tags(sess.name) + '</b>.');
+            socket.emit('enter', {name: sess.name});
+        }
+	});
 
     //Checks if user is valid
     $('#enter').click(function() {
@@ -356,6 +343,18 @@ window.onload = function() {
         field.value += $(this).attr("value");
         field.focus();
     });
+
+
+	function validate_name(username) {
+    	if (username == '') {
+        	alert('Name cannot be empty!');
+    	} else {
+    	    $.post("/login",{name:username},function(data){
+    			//socket.emit('new_user', {private_id: data});
+    	        window.location.href="/";
+    	    });
+    	}
+	}
 }
 
 function is_typing(field) {
@@ -372,17 +371,6 @@ function is_typing(field) {
     })
 }
 
-function validate_name(username) {
-    if (username == '') {
-        alert('Name cannot be empty!');
-    } else {
-        $.post("/login",{name:username},function(data){        
-            if(data==='done') {
-                window.location.href="/";
-            }
-        });
-    }
-}
 
 function format(message) {
     var text = autocomplete(message, "$$");

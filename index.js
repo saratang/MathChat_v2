@@ -33,6 +33,8 @@ app.get("/", function(req, res){
 //     sess=req.session;
 // });
 
+
+
 app.post('/login',function(req,res){
 	sess=req.session;
 	//In this we are assigning email to sess.name variable.
@@ -41,14 +43,14 @@ app.post('/login',function(req,res){
     sess.user_sess.name=req.body.name;
     sess.user_sess.private_id = make_id();
     sess.user_sess.public_id = make_id();
-    // user_sessions.push(sess.user_sess);
-    
+    user_sessions[sess.user_sess.private_id] = sess.user_sess; 
+
     sess.global_sess = [];
     sess.global_sess.push(req.body.name);
     // sess.name = req.body.name;
     // sess.user_id = make_id();
     // console.log(req);
-	res.end('done');
+	res.end(sess.user_sess.private_id);
 });
 
 // var name;
@@ -62,6 +64,10 @@ app.get('/logout', function(req, res) {
             res.redirect('/');
         }
     });
+});
+
+app.get('/user_sess', function(req, res) {
+	res.end(JSON.stringify(req.session.user_sess));
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -90,16 +96,7 @@ io.sockets.on('connection', function (socket) {
         data.msgbox_id = make_id();
         io.sockets.emit('message', data);
     });
-    socket.on('new_user', function () {
-        user_sessions[sess.user_sess.private_id] = sess.user_sess;
-        console.log(user_sessions);
-        // var online_users = get_online_users(user_sessions);
-        // console.log(online_users);
-
-        io.sockets.emit('send_user_sess', {sess: sess.user_sess});
-            // , online: online_users 
-        // });
-    });
+    
     socket.on('enter', function (data) {
         console.log(data.name + ' entered.');
         var online_users = get_online_users(user_sessions);
