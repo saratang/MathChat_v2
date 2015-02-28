@@ -8,6 +8,7 @@ window.onload = function() {
     var content = document.getElementById("chatbox");
     var blip = document.createElement("audio");
     blip.setAttribute('src', '/blip.wav');
+    var autolinker = new Autolinker();
 
     var sess;
     //var global_sess;
@@ -18,6 +19,7 @@ window.onload = function() {
             var html = '';
             var i = messages.length - 1;
             var message = escape_tags(messages[i].message);
+            var message = autolinker.link(message);
 
             html += '<div class="msgcontainer servercontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
             html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '"><i>' + message + '</i></div></div></div>'; 
@@ -127,6 +129,7 @@ window.onload = function() {
                 current_index = i;
                 message = escape_tags(messages[i].message);
                 message = new_line(message);
+                message = autolinker.link(message);
 
                 if (i != 0 && messages[i-1].public_id == messages[i].public_id && !(messages[i-1].id)) {
                     // console.log(i);
