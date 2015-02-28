@@ -112,7 +112,7 @@ io.sockets.on('connection', function (socket) {
         var online_users = get_online_users(user_sessions);
         console.log(user_sessions);
 
-        io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id() });
+        io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id(), color: data.color });
         io.sockets.emit('update_users', {online: online_users});
     });
     socket.on('exit', function (data) {

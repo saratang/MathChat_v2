@@ -20,9 +20,10 @@ window.onload = function() {
             var i = messages.length - 1;
             var message = escape_tags(messages[i].message);
             var message = autolinker.link(message);
+            console.log(messages[i]);
 
             html += '<div class="msgcontainer servercontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
-            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '"><i>' + message + '</i></div></div></div>'; 
+            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '" style="color:' + messages[i].color + ';"><i>' + message + '</i></div></div></div>'; 
             
             $("#chatbox").append(html);
             blip.play();
@@ -108,19 +109,24 @@ window.onload = function() {
         if (logged_in(sess)) {
             $('#greeting p').append('<b>' + escape_tags(sess.name) + '</b>.');
             stylize(sess.color, sess.secondary_color);
-            socket.emit('enter', {name: sess.name, private_id: sess.private_id});
+            socket.emit('enter', {name: sess.name, private_id: sess.private_id, color: sess.color});
         }
 	});
 
 
     function stylize(color1, color2) {
         $('.btn-theme').css('background-color', color1);
-        $('#greeting p b').css('color', color1);
         $('.btn-theme').hover(function() {
             $(this).css({'background-color': color2, 'color': '#f5f5f5'});
         }, function() {
             $(this).css({'background-color': color1, 'color': '#f5f5f5'})
         });
+
+        $('#greeting p b').css('color', color1);
+        $('.form-control').css({'border': '1px solid ' + color1});
+        $('#homelink').html('M<span style="color:' + color1 + ';">$\\alpha$</span>thChat');
+        // $('#homelink').html('<span style="color:' + color1 + ';">M</span>$\\alpha$<span style="color:' + color1 +';">thChat</span>')
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#homelink').html()]);
     }
     //Checks if user is valid
     $('#enter').click(function() {
