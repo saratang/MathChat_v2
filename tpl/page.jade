@@ -1,16 +1,6 @@
 doctype html
 html
-    head
-        title= "MathChat"
-        link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css')
-        link(rel='stylesheet' href='/css/style.css')
-        script(src='/socket.io/socket.io.js')
-        script(src='//code.jquery.com/jquery-1.11.2.min.js')
-        script(src='//code.jquery.com/jquery-migrate-1.2.1.min.js')
-        script(type='text/x-mathjax-config') MathJax.Hub.Config({ extensions: ["tex2jax.js"], jax: ["input/TeX", "output/HTML-CSS"], tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ], displayMath: [ ['$$','$$'], ["\\[","\\]"] ], processEscapes: true}, "HTML-CSS": { availableFonts: ["TeX"] }});
-        script(src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML')
-        script(src='/Autolinker.js')
-        script(src='/chat.js')
+    include ./header.jade
     body
         .container
             .page-header
