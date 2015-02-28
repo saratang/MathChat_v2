@@ -126,7 +126,7 @@ window.onload = function() {
         $('.form-control').css({'border': '1px solid ' + color1});
         $('#homelink').html('M<span style="color:' + color1 + ';">$\\alpha$</span>thChat');
         // $('#homelink').html('<span style="color:' + color1 + ';">M</span>$\\alpha$<span style="color:' + color1 +';">thChat</span>')
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub, $('#homelink').html()]);
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
     }
     //Checks if user is valid
     $('#enter').click(function() {
