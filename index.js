@@ -40,11 +40,15 @@ app.post('/login',function(req,res){
 	sess=req.session;
 	//In this we are assigning email to sess.name variable.
 	//name comes from HTML page.
+    var color_scheme = generate_color();
+    // console.log(color_scheme);
     sess.user_sess = {};
     sess.user_sess.name=req.body.name;
     sess.user_sess.private_id = make_id();
     sess.user_sess.public_id = make_id();
     sess.user_sess.online = true;
+    sess.user_sess.color = color_scheme['primary_color'];
+    sess.user_sess.secondary_color = color_scheme['secondary_color']; 
     user_sessions[sess.user_sess.private_id] = sess.user_sess; 
 
     sess.global_sess = [];
@@ -90,6 +94,9 @@ io.sockets.on('connection', function (socket) {
                     if (prop == 'public_id') {
                         data.public_id = user_sessions[user][prop];
                     }
+                    if (prop == 'color') {
+                        data.color = user_sessions[user][prop];
+                    }
                 }
             }
         }
@@ -103,6 +110,8 @@ io.sockets.on('connection', function (socket) {
         console.log(data.name + ' entered.');
         make_online(user_sessions, data.private_id);
         var online_users = get_online_users(user_sessions);
+        console.log(user_sessions);
+
         io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id() });
         io.sockets.emit('update_users', {online: online_users});
     });
@@ -153,14 +162,22 @@ function make_offline(user_sessions, private_id) {
 }
 
 function get_online_users(user_sessions) {
-    var online_users = [];
+    var online_users = {};
     for (var user in user_sessions) {
-        for (var prop in user_sessions[user]) {
-            if (prop == 'online') {
-                if (user_sessions[user][prop] == true) {
-                    for (var prop2 in user_sessions[user]) {
-                        if (prop2 == 'name') {
-                            online_users.push(user_sessions[user][prop2]);
+        for (var status in user_sessions[user]) {
+            if (status == 'online') {
+                if (user_sessions[user][status] == true) {
+                    for (var name in user_sessions[user]) {
+                        if (name == 'name') {
+                            for (var public_id in user_sessions[user]) {
+                                if (public_id == 'public_id') {
+                                    for (var color in user_sessions[user]) {
+                                        if (color == 'color') {
+                                            online_users[user_sessions[user][public_id]] = {"name": user_sessions[user][name], "color": user_sessions[user][color]}
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -181,6 +198,30 @@ function make_id()
     return text;
 }
 
+function generate_color()
+{
+    var colors = {0: ['#FE2E64', '#C2224D'], 1: ['#088A85', '#065F5C'], 2: ['#FFBF00', '#A67D01'], 3: ['#31B404', '#1C6E01'], 4: ['#210B61', '#100531']};
+    var color_id = Math.floor(Math.random()*Object.size(colors));
+    console.log(color_id);
+
+    for (var color in colors) {
+        if (color == color_id) {
+            // console.log(colors[color][0]);
+            var primary_color = colors[color][0];
+            var secondary_color = colors[color][1];
+        }
+    }
+    return {"primary_color": primary_color, "secondary_color": secondary_color};
+}
+
 function escape_tags(message) {
     return message.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') ;
 }
+
+Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};

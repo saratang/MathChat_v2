@@ -1,5 +1,5 @@
 window.onload = function() {
-    var online_users = [];
+    var online_users = {};
     var messages = [];
     var current_index;
     var socket = io.connect(window.location.origin || window.location.protocol + '//' + window.location.hostname + ':' + window.location.port);
@@ -59,9 +59,10 @@ window.onload = function() {
     socket.on('update_users', function (data) {
         var html = ''
         var online_users = data.online;
+        // console.log(online_users);
 
-        for (var i=0; i<online_users.length; i++) {
-            html += '<div>' + online_users[i] + '</div>';
+        for (var user in online_users) {
+            html += '<div style="color:' + online_users[user].color + ';">' + online_users[user].name + '</div>';
         }
         $('#onlinebox').html(html);        
     });
@@ -96,19 +97,31 @@ window.onload = function() {
         return false;
     }
 
-	socket.on('send_global_sess', function (data) {
-        global_sess = data.global_sess;
-        // console.log(global_sess);
-    });
+	// socket.on('send_global_sess', function (data) {
+ //        global_sess = data.global_sess;
+ //        // console.log(global_sess);
+ //    });
 	
 	$.get( "/user_sess", function( data ) {
 		sess = jQuery.parseJSON(data);
+        // console.log(sess);
         if (logged_in(sess)) {
             $('#greeting p').append('<b>' + escape_tags(sess.name) + '</b>.');
+            stylize(sess.color, sess.secondary_color);
             socket.emit('enter', {name: sess.name, private_id: sess.private_id});
         }
 	});
 
+
+    function stylize(color1, color2) {
+        $('.btn-theme').css('background-color', color1);
+        $('#greeting p b').css('color', color1);
+        $('.btn-theme').hover(function() {
+            $(this).css({'background-color': color2, 'color': '#f5f5f5'});
+        }, function() {
+            $(this).css({'background-color': color1, 'color': '#f5f5f5'})
+        });
+    }
     //Checks if user is valid
     $('#enter').click(function() {
         var name = validate_name($('#name').val());
@@ -144,7 +157,7 @@ window.onload = function() {
                 } else {
                 //for(var i=0; i<messages.length; i++) {
                     // console.log(i);
-                    html += '<div class="msgcontainer"><div class="userbox text-center"><b>' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
+                    html += '<div class="msgcontainer"><div class="userbox text-right"><b style="color:' + messages[i].color + ';">' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
                     html += '<div class="msgbox" id="msgbox_' + messages[i].msgbox_id + '">';
                     html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div></div></div>';
                     $("#chatbox").append(html);
