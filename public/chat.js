@@ -70,7 +70,7 @@ window.onload = function() {
 
     //If user unloads window (BUT WAIT THIS ALSO TAKES ACCOUNT OF REFRESHING)
     window.onbeforeunload = function() {
-        socket.emit('exit', {name: sess.name, private_id: sess.private_id});
+        socket.emit('exit', {name: sess.name, private_id: sess.private_id, color: sess.color});
     }
     // $(window).unload(function() {
     //     socket.emit('exit', {name: sess.name});
