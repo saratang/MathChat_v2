@@ -20,13 +20,14 @@ window.onload = function() {
             var i = messages.length - 1;
             var message = escape_tags(messages[i].message);
             var message = autolinker.link(message);
-            console.log(messages[i]);
+            // console.log(messages[i]);
 
             html += '<div class="msgcontainer servercontainer"><div class="serverbox" id="serverln_' + messages[i].id + '">';
-            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '" style="color:' + messages[i].color + ';"><i>' + message + '</i></div></div></div>'; 
+            html += '<div class="serverln text-center" id="servermsg_' + messages[i].id + '" style="color:' + messages[i].color + ';">' + messages[i].name + '<i>' + message + '</i></div></div></div>'; 
             
             $("#chatbox").append(html);
             blip.play();
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, messages[i].message]);
         }
     }
 
@@ -52,8 +53,6 @@ window.onload = function() {
             // add_to_onlinebox(data.user);
         }
         // console.log(data);
-
-        //MathJax.Hub.Queue(["Typset", MathJax.Hub, messages[i].message]);
         $("#chatbox").scrollTop($("#chatbox")[0].scrollHeight);
     });
 
@@ -152,7 +151,8 @@ window.onload = function() {
 
                 if (i != 0 && messages[i-1].public_id == messages[i].public_id && !(messages[i-1].id)) {
                     // console.log(i);
-                    html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div>';
+                    html += '<div class="row"><div class="msgln text-center col-xs-9" id="msg_' + messages[i].msg_id + '">' + message + '</div>';
+                    html += '<div class="timestamp col-xs-3" id="time_' + messages[i].msg_id + '">' + moment().format('h:mm a') + '</div></div>';
 
                     var j = i - 1;
                     while (!$("#msgbox_" + messages[j].msgbox_id).length) {
@@ -163,9 +163,10 @@ window.onload = function() {
                 } else {
                 //for(var i=0; i<messages.length; i++) {
                     // console.log(i);
-                    html += '<div class="msgcontainer"><div class="userbox text-right"><b style="color:' + messages[i].color + ';">' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
-                    html += '<div class="msgbox" id="msgbox_' + messages[i].msgbox_id + '">';
-                    html += '<div class="msgln text-center" id="msg_' + messages[i].msg_id + '">' + message + '</div></div></div>';
+                    html += '<div class="msgcontainer row"><div class="userbox text-right col-xs-3"><b style="color:' + messages[i].color + ';">' + (messages[i].username ? messages[i].username : 'Server') + '</b></div>';
+                    html += '<div class="msgbox col-xs-9" id="msgbox_' + messages[i].msgbox_id + '"><div class="row">';
+                    html += '<div class="msgln text-center col-xs-9" id="msg_' + messages[i].msg_id + '">' + message + '</div>';
+                    html += '<div class="timestamp col-xs-3" id="time_' + messages[i].msg_id + '">' + moment().format('h:mm a') + '</div></div></div></div>';
                     $("#chatbox").append(html);
                 }
                 //}
@@ -227,6 +228,7 @@ window.onload = function() {
     })
 
     .keyup(function(e) {
+        show_preview(this.value);
         //Typing should show "User is typing"
         if (this.value != '') {
             socket.emit('typing', {user: sess.name});
@@ -243,7 +245,7 @@ window.onload = function() {
         }
 
         //Pushing Up should pull up last message
-        if (e.keyCode == 38) {
+        if (e.keyCode == 38 && field.value == '') {
             //if not last message you typed...
             if (messages[current_index].public_id == sess.public_id) {
                 this.value = messages[current_index].message;
@@ -260,7 +262,7 @@ window.onload = function() {
         }
 
         //Pushing Down should go to "next" message
-        if (e.keyCode == 40) {
+        if (e.keyCode == 40 && field.value == '') {
             if (current_index < messages.length - 1) {
                 do {
                     current_index++;
@@ -279,9 +281,6 @@ window.onload = function() {
     })
     .keydown(function(e) {
         if (e.keyCode == 13) {
-            return false;
-        }
-        if (e.keyCode == 38) {
             return false;
         }
 
@@ -355,6 +354,7 @@ window.onload = function() {
         // console.log('After: ' + text);
         socket.emit('send', { message: text, username: sess.name, private_id: sess.private_id });
         field.value = "";
+        $('#preview').html('');
         socket.emit('not_typing');
         //$("#typing span").addClass("invisible");
     };
@@ -474,3 +474,17 @@ $.fn.setCaret = function(start, end) {
         }
     });
 };
+
+function timestring(dateTime) {
+    hours = dateTime.getUTCHours().toString();
+    minutes = dateTime.getUTCMinutes().toString();
+
+    return hours + ":" + minutes;
+}
+
+function show_preview(text) {
+    text = escape_tags(text);
+    text = new_line(text);
+    $('#preview').html(text);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+}

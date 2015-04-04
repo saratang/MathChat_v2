@@ -101,6 +101,7 @@ io.sockets.on('connection', function (socket) {
             }
         }
         delete data.private_id;
+        data.timestamp = new Date();
         data.msg_id = make_id();
         data.msgbox_id = make_id();
         io.sockets.emit('message', data);
@@ -112,7 +113,7 @@ io.sockets.on('connection', function (socket) {
         var online_users = get_online_users(user_sessions);
         console.log(user_sessions);
 
-        io.sockets.emit('server_message', { message: data.name + ' entered the chatroom.', id: make_id(), color: data.color });
+        io.sockets.emit('server_message', { message: ' entered the chatroom.', name: data.name, id: make_id(), color: data.color });
         io.sockets.emit('update_users', {online: online_users});
     });
     socket.on('exit', function (data) {
@@ -124,7 +125,7 @@ io.sockets.on('connection', function (socket) {
         var online_users = get_online_users(user_sessions);
         console.log(online_users);
 
-        io.sockets.emit('server_message', { message: data.name + ' left the chatroom.', id: make_id(), color: data.color });
+        io.sockets.emit('server_message', { message: ' left the chatroom.', name: data.name, id: make_id(), color: data.color });
         io.sockets.emit('update_users', {online: online_users});
     });
     socket.on('typing', function (data) {
