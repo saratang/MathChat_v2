@@ -33,7 +33,7 @@
 }
 
 .msgcontainer {
-	margin: auto;
+	margin: 10px 0 10px 0;
 	display: table;
 	width: 100%;
 }
@@ -45,11 +45,9 @@
 .msgbox {
 	display: table-cell;
 	table-layout: fixed;
-	min-height: 76px;
 }
 
 .serverbox {
-	min-height: 40px;
 	display: table;
 	table-layout: fixed;
 	width: 100%;
@@ -63,8 +61,8 @@
 
 .msgln {
 	vertical-align: middle;
-	height: 30px;
 	text-align: left;
+	margin-bottom: 10px;
 }
 
 .timestamp {
